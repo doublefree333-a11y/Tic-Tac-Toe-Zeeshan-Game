@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeeshan Tic Tac Toe — Ultimate Edition</title>
+<style>
+:root{
+  --bg:#000; --fg:#fff; --accent:#00c2ff; --muted:rgba(255,255,255,0.6); --card:#111; --win:#00ff7a; --glass:rgba(255,255,255,0.03);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);}
+.wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:18px;flex-direction:column;gap:12px;position:relative;}
+.card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,0.35);}
+header{width:100%;text-align:center;margin-bottom:6px;}
+header .title{font-weight:800;font-size:22px;}
+header .subtitle{font-size:12px;color:var(--muted);}
+.board-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.board{display:grid;gap:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);}
+.cell{width:88px;height:88px;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;border-radius:8px;cursor:pointer;user-select:none;background:var(--glass);transition:transform .12s;color:var(--fg);}
+.cell:hover{transform:translateY(-6px);}
+.cell.disabled{cursor:not-allowed;opacity:0.7;}
+.win{box-shadow:0 6px 20px rgba(0,255,122,0.15);border:2px solid var(--win);}
+.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.info{padding:8px 10px;border-radius:8px;background:var(--glass);}
+button{cursor:pointer;}
+.top-left{position:absolute;top:12px;left:12px;display:flex;gap:8px;align-items:center;}
+.top-right{position:absolute;top:12px;right:12px;display:flex;gap:8px;align-items:center;}
+input,select{padding:5px;border-radius:5px;border:none;background:#222;color:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Top Title -->
+<div style="font-size:32px;font-weight:800;margin-bottom:16px;text-align:center;color:var(--accent);">
+  Zeeshan Game Studio
+</div>
+
+<!-- Top-left: Select Your ID -->
+<div class="top-left card">
+  <label>Your ID:</label>
+  <input type="text" id="playerID" placeholder="Enter your ID">
+  <button id="saveID">Save ID</button>
+</div>
+
+<header class="card">
+  <div class="title">Main Menu</div>
+</header>
+
+<!-- Setup Card -->
+<div class="card" id="setupCard">
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div>
+      <label>Rows:</label><input type="number" id="customRows" min="3" value="3">
+      <label>Cols:</label><input type="number" id="customCols" min="3" value="3">
+    </div>
+    <div>
+      <label>Player A:</label><input type="text" id="symA" maxlength="2" value="X">
+      <label>Player B:</label><input type="text" id="symB" maxlength="2" value="O">
+    </div>
+    <div>
+      <label>Winning Line:</label><input type="number" id="winLen" min="3" value="3">
+    </div>
+    <div>
+      <label>Play Mode:</label>
+      <button id="modeFriend">Friend</button>
+      <button id="modeRobot">Robot</button>
+      <button id="modeOnline">Online</button>
+    </div>
+    <div id="robotLevelUI" style="display:none;">
+      <label>Robot Level:</label>
+      <button data-level="easy">Easy</button>
+      <button data-level="medium">Medium</button>
+      <button data-level="hard">Hard</button>
+      <button data-level="expert">Expert</button>
+    </div>
+    <div>
+      <button id="playBtn">Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- Top-right: Theme -->
+<div class="top-right card">
+  <label>BG Color:</label><input type="color" id="bgColor" value="#000000">
+  <label>Text Color:</label><input type="color" id="textColor" value="#ffffff">
+  <button id="applyTheme">Apply & Save</button>
+</div>
+
+<!-- Game Card -->
+<div class="card" id="gameCard" style="display:none">
+  <div style="font-weight:800;font-size:18px;">Tic Tac Toe <button id="backMenu">Back to Main Menu</button></div>
+  <div class="board-wrap">
+    <div id="board" class="board"></div>
+    <div class="controls">
+      <button id="undoBtn">Undo</button>
+      <button id="redoBtn">Redo</button>
+      <button id="newBtn">New Game</button>
+      <button id="hintBtn">Hint</button>
+      <button id="saveBtn">Save Score</button>
+    </div>
+    <div class="info" id="status">Ready</div>
+  </div>
+</div>
+
+<!-- Friend Card -->
+<div class="card" id="friendCard">
+  <div style="font-weight:700;margin-bottom:8px">Friends & Chat</div>
+  <input type="text" id="friendID" placeholder="Friend ID">
+  <input type="text" id="friendName" placeholder="Friend Name">
+  <button id="addFriendBtn">Add Friend</button>
+  <div id="friendList"></div>
+  <div id="chatBox" style="max-height:150px;overflow-y:auto;background:#222;margin:5px 0;padding:5px;"></div>
+  <input type="text" id="chatInput" placeholder="Type message...">
+  <button id="sendChat">Send</button>
+  <button id="deleteMsg">Delete Last Msg</button>
+</div>
+
+<!-- Score Card -->
+<div class="card" id="scoreCard">
+  <div style="font-weight:700;margin-bottom:8px">Scores</div>
+  <div>Player A: <span id="scoreA">0</span> — Player B: <span id="scoreB">0</span></div>
+</div>
+
+</div>
+
+<script>
+// Global State
+const state={sizeR:3,sizeC:3,board:[],history:[],redo:[],current:'',symbols:['X','O'],scores:{A:0,B:0},mode:'friend',level:'medium',gameOver:false,winLength:3,playerID:''};
+let friends=[];
+
+// Save Player ID
+document.getElementById('saveID').onclick=()=>{
+  const id=document.getElementById('playerID').value.trim();
+  if(id){ state.playerID=id; alert('Your ID saved: '+id); document.getElementById('playerID').disabled=true; }
+};
+
+// Mode selection
+document.getElementById('modeFriend').onclick=()=>setMode('friend');
+document.getElementById('modeRobot').onclick=()=>setMode('robot');
+document.getElementById('modeOnline').onclick=()=>setMode('online');
+
+function setMode(m){ 
+  state.mode=m; 
+  document.getElementById('robotLevelUI').style.display=(m==='robot')?'block':'none';
+}
+
+// Robot Level
+document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>state.level=b.dataset.level);
+
+// Apply Theme
+document.getElementById('applyTheme').onclick=()=>{
+  const bg=document.getElementById('bgColor').value;
+  const fg=document.getElementById('textColor').value;
+  document.documentElement.style.setProperty('--bg',bg);
+  document.documentElement.style.setProperty('--fg',fg);
+};
+
+// Play button
+document.getElementById('playBtn').onclick=()=>{
+  if(!state.playerID){ alert('Please select your ID first!'); return; }
+  state.sizeR=Number(document.getElementById('customRows').value)||3;
+  state.sizeC=Number(document.getElementById('customCols').value)||3;
+  state.symbols[0]=document.getElementById('symA').value[0]||'X';
+  state.symbols[1]=document.getElementById('symB').value[0]||'O';
+  state.winLength=Number(document.getElementById('winLen').value)||3;
+  startGame();
+  document.getElementById('setupCard').style.display='none';
+  document.getElementById('gameCard').style.display='block';
+};
+
+// Back to menu
+document.getElementById('backMenu').onclick=()=>{
+  document.getElementById('gameCard').style.display='none';
+  document.getElementById('setupCard').style.display='block';
+};
+
+// Start Game
+function startGame(){
+  state.board=Array(state.sizeR*state.sizeC).fill('');
+  state.history=[]; state.redo=[]; state.current=state.symbols[0]; state.gameOver=false;
+  renderBoard(); renderStatus(`${state.current}'s turn`); updateScores();
+}
+
+// Render Board
+function renderBoard(){
+  const b=document.getElementById('board'); b.innerHTML=''; b.style.gridTemplateColumns=`repeat(${state.sizeC},1fr)`;
+  state.board.forEach((v,i)=>{
+    const d=document.createElement('div');
+    d.className='cell'+(v?' disabled':''); d.dataset.i=i; d.textContent=v; d.onclick=()=>onCellClick(i);
+    b.appendChild(d);
+  });
+}
+
+// Click Cell
+function onCellClick(i){ if(state.gameOver||state.board[i]) return; makeMove(i);}
+
+// Make Move
+function makeMove(i){
+  state.board[i]=state.current; state.history.push({i,player:state.current}); state.redo=[];
+  renderBoard();
+  const res=checkWin(state.board,state.sizeR,state.sizeC,state.winLength);
+  if(res.winner){ state.gameOver=true; highlightLine(res.line); renderStatus(`${res.winner} wins!`); updateLocalScores(res.winner); return; }
+  if(res.draw){ state.gameOver=true; renderStatus('Draw'); return; }
+  state.current=(state.current===state.symbols[0])?state.symbols[1]:state.symbols[0]; renderStatus(`${state.current}'s turn`);
+  if(state.mode==='robot' && state.current===state.symbols[1]) setTimeout(robotMove,500);
+}
+
+// Check Win
+function checkWin(board,R,C,winLen){
+  const lines=[];
+  for(let r=0;r<R;r++) for(let c=0;c<=C-winLen;c++){ const line=[]; for(let k=0;k<winLen;k++) line.push(r*C+(c+k)); lines.push(line);}
+  for(let c=0;c<C;c++) for(let r=0;r<=R-winLen;r++){ const line=[]; for(let k=0;k<winLen;k++) line.push((r+k)*C+c); lines.push(line);}
+  for(let r=0;r<=R-winLen;r++) for(let c=0;c<=C-winLen;c++){ const line=[]; for(let k=0;k<winLen;k++) line.push((r+k)*C+(c+k)); lines.push(line);}
+  for(let r=0;r<=R-winLen;r++) for(let c=winLen-1;c<C;c++){ const line=[]; for(let k=0;k<winLen;k++) line.push((r+k)*C+(c-k)); lines.push(line);}
+  for(const line of lines){ const vals=line.map(i=>board[i]); if(vals.every(v=>v && v===vals[0])) return {winner:vals[0],line};}
+  if(board.every(v=>v)) return {draw:true};
+  return {};
+}
+
+// Highlight Win
+function highlightLine(line){ line.forEach(i=>{ const el=document.querySelector(`[data-i='${i}']`); if(el) el.classList.add('win');});}
+
+// Robot Move
+function robotMove(){ 
+  if(state.gameOver) return; 
+  const moves=state.board.map((v,i)=>v?null:i).filter(v=>v!==null); if(!moves.length) return; 
+  let m=moves[Math.floor(Math.random()*moves.length)];
+  makeMove(m);
+}
+
+// Controls
+document.getElementById('undoBtn').onclick=()=>{ if(!state.history.length) return; const last=state.history.pop(); state.board[last.i]=''; state.redo.push(last); state.current=last.player; renderBoard(); renderStatus(`${state.current}'s turn`);};
+document.getElementById('redoBtn').onclick=()=>{ const r=state.redo.pop(); if(!r) return; state.history.push(r); state.board[r.i]=r.player; state.current=(r.player===state.symbols[0])?state.symbols[1]:state.symbols[0]; renderBoard(); renderStatus(`${state.current}'s turn`);};
+document.getElementById('newBtn').onclick=()=>startGame();
+document.getElementById('hintBtn').onclick=()=>{
+  const moves=state.board.map((v,i)=>v?null:i).filter(v=>v!==null); if(!moves.length) return; let m=moves[0];
+  for(const i of moves){ const nb=state.board.slice(); nb[i]=state.current; if(checkWin(nb,state.sizeR,state.sizeC,state.winLength).winner===state.current){ m=i; break; } }
+  const el=document.querySelector(`[data-i='${m}']`);
+  if(el) el.animate([{transform:'scale(1.08)'},{transform:'scale(1)'}],{duration:700});
+};
+document.getElementById('saveBtn').onclick=()=>{ localStorage.setItem('zt_scores',JSON.stringify(state.scores)); renderStatus('Score saved'); };
+
+// Friends & Chat
+document.getElementById('addFriendBtn').onclick=()=>{
+  const id=document.getElementById('friendID').value.trim();
+  const name=document.getElementById('friendName').value.trim();
+  if(id && name){ friends.push({id,name}); renderFriends(); document.getElementById('friendID').value=''; document.getElementById('friendName').value=''; }
+};
+function renderFriends(){ const fl=document.getElementById('friendList'); fl.innerHTML=''; friends.forEach(f=>{ const d=document.createElement('div'); d.textContent=`${f.name} (${f.id})`; fl.appendChild(d);});}
+document.getElementById('sendChat').onclick=()=>{
+  const msg=document.getElementById('chatInput').value.trim(); if(!msg) return;
+  if(!state.playerID){ alert('Select your ID first'); return; }
+  const cb=document.getElementById('chatBox'); const d=document.createElement('div'); d.textContent=`${state.playerID}: ${msg}`; cb.appendChild(d); cb.scrollTop=cb.scrollHeight; document.getElementById('chatInput').value='';
+};
+document.getElementById('deleteMsg').onclick=()=>{
+  const cb=document.getElementById('chatBox'); if(cb.lastChild) cb.removeChild(cb.lastChild);
+};
+
+// Helpers
+function renderStatus(s){ document.getElementById('status').textContent=s; }
+function updateScores(){ document.getElementById('scoreA').textContent=state.scores.A; document.getElementById('scoreB').textContent=state.scores.B; }
+function updateLocalScores(w){ if(w===state.symbols[0]) state.scores.A++; else if(w===state.symbols[1]) state.scores.B++; updateScores();}
+</script>
+</body>
+</html>
